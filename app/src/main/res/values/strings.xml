@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">AsteroidAlert</string>
+    <string name="close_date">Closest approach on: %1$s</string>
+    <string name="miss_dist">Misses us by a distance of %1$s KM</string>
+    <string name="max_diameter">max diameter is %1$s meters</string>
+    <string name="is_dangerous">is potentially dangerous: %1$s</string>
+    <string name="not_avail">not available</string>
+    <string name="loading">Loading...</string>
+</resources>
