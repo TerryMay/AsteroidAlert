@@ -27,39 +27,46 @@ class NeoAdapter(private val context: Context, private val data: List<NearEarthO
         return data[p0]
     }
 
-    override fun getView(position: Int, p1: View?, parent: ViewGroup?): View {
-        var convertView = p1
-        val viewHolder: ViewHolder
-        if (convertView == null) {
-            convertView = inflater.inflate(R.layout.view_near_earth_object_data, parent, false)
-            viewHolder = ViewHolder(convertView)
-            viewHolder.setData(getItem(position), context)
-            convertView.tag = viewHolder
-        } else {
-            viewHolder = convertView.tag as ViewHolder
+    override fun getView(position: Int, view: View?, parent: ViewGroup?): View {
+        val dataItem = getItem(position)
+        return view?.let {
+            (it.tag as ViewHolder).apply {
+                setData(dataItem)
+            }.view
+        } ?: run {
+            inflater.inflate(R.layout.view_near_earth_object_data,parent, false).apply {
+                tag = ViewHolder(this, dataItem)
+            }
         }
-        return convertView!!
     }
 }
 
-private class ViewHolder(view: View) {
+private class ViewHolder(val view: View, data: NearEarthObject) {
     val neoName: TextView = view.findViewById(R.id.txt_name)
     val closeApproach: TextView = view.findViewById(R.id.txt_close_approach_date)
     val missDistance: TextView = view.findViewById(R.id.txt_miss_distance)
     val maxDiameter: TextView = view.findViewById(R.id.txt_max_diameter)
     val isDangerous: TextView = view.findViewById(R.id.txt_is_dangerous)
 
-    fun setData(data: NearEarthObject, context: Context) {
+    init {
+        setData(data)
+    }
+
+    fun setData(data: NearEarthObject) {
+        val context = view.context
         val dangerous = data.is_potentially_hazardous_asteroid.toString()
         val meters = data.estimated_diameter.meters.estimated_diameter_max.toString()
+        // Pair<date of approach, distance of miss>
         val approachData = if (data.close_approach_data.isNotEmpty()) {
             data.close_approach_data[0].close_approach_date_full to data.close_approach_data[0].miss_distance.kilometers
         } else {
+            // backup message if there is no data
             context.getString(R.string.not_avail) to context.getString(R.string.not_avail)
         }
         neoName.text = data.name
-        closeApproach.text = String.format(context.getString(R.string.close_date), approachData.first)
-        missDistance.text = String.format(context.getString(R.string.miss_dist), approachData.second)
+        val (approachDate, missDistanceKm) = approachData
+        closeApproach.text = String.format(context.getString(R.string.close_date), approachDate)
+        missDistance.text = String.format(context.getString(R.string.miss_dist), missDistanceKm)
         maxDiameter.text = String.format(context.getString(R.string.max_diameter), meters)
         isDangerous.text = String.format(context.getString(R.string.is_dangerous), dangerous)
     }
